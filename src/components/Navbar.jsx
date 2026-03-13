@@ -1,0 +1,37 @@
+import { FiSearch, FiHeart, FiShoppingCart, FiUser } from "react-icons/fi";
+
+function Navbar() {
+  return (
+    <header className="bg-white shadow-sm sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        {/* Logo */}
+        <div className="flex items-center gap-2">
+          <div className="bg-green-500 text-white w-8 h-8 flex items-center justify-center rounded-full font-bold">
+            P
+          </div>
+          <h1 className="font-semibold text-lg">PrimeBasket</h1>
+        </div>
+
+        {/* Menu */}
+        <nav className="hidden md:flex gap-8 text-gray-600">
+          <a href="#" className="text-green-600 font-medium">
+            Home
+          </a>
+          <a href="#">Shop</a>
+          <a href="#">Categories</a>
+          <a href="#">Deals</a>
+        </nav>
+
+        {/* Icons */}
+        <div className="flex items-center gap-5 text-xl text-gray-600">
+          <FiSearch />
+          <FiHeart />
+          <FiShoppingCart />
+          <FiUser />
+        </div>
+      </div>
+    </header>
+  );
+}
+
+export default Navbar;
