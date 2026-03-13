@@ -1,4 +1,5 @@
 import { FiSearch, FiHeart, FiShoppingCart, FiUser } from "react-icons/fi";
+import { Link } from "react-router-dom";
 
 function Navbar() {
   return (
@@ -27,7 +28,9 @@ function Navbar() {
           <FiSearch />
           <FiHeart />
           <FiShoppingCart />
-          <FiUser />
+          <Link to="/login">
+            <FiUser />
+          </Link>
         </div>
       </div>
     </header>
