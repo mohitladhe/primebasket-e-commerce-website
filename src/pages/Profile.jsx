@@ -89,28 +89,32 @@ function Profile() {
   // ---------------- IMAGE UPLOAD ----------------
 
   const uploadAvatar = async (e) => {
-    const file = e.target.files[0];
+  const file = e.target.files[0];
+  if (!file || !user) return;
 
-    if (!file) return;
+  const fileExt = file.name.split(".").pop();
+  const filePath = `${user.id}/${Date.now()}.${fileExt}`;
 
-    const filePath = `${user.id}/${Date.now()}_${file.name}`;
-
-    const { error } = await supabase.storage
-      .from("avatars")
-      .upload(filePath, file);
-
-    if (error) {
-      alert("Upload failed");
-      return;
-    }
-
-    const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
-
-    setProfile({
-      ...profile,
-      avatar_url: data.publicUrl,
+  const { error } = await supabase.storage
+    .from("avatars")
+    .upload(filePath, file, {
+      cacheControl: "3600",
+      upsert: true,
     });
-  };
+
+  if (error) {
+    console.log("Upload error:", error);
+    alert("Upload failed");
+    return;
+  }
+
+  const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
+
+  setProfile((prev) => ({
+    ...prev,
+    avatar_url: data.publicUrl,
+  }));
+};
 
   const handleChange = (e) => {
     setProfile({

@@ -1,98 +1,328 @@
-import { FiMapPin, FiEdit2, FiTrash2 } from "react-icons/fi";
+import { useEffect, useState } from "react";
+import { supabase } from "../../lib/supabaseClient";
+import { useAuth } from "../../context/AuthContext";
+
+import {
+  FiMapPin,
+  FiEdit2,
+  FiTrash2,
+  FiPlus,
+  FiX,
+  FiCheck
+} from "react-icons/fi";
 
 function Addresses() {
+
+  const { user } = useAuth();
+
+  const [addresses,setAddresses] = useState([]);
+  const [showModal,setShowModal] = useState(false);
+  const [editing,setEditing] = useState(null);
+
+  const [form,setForm] = useState({
+    label:"",
+    full_name:"",
+    phone:"",
+    street:"",
+    city:"",
+    state:"",
+    zipcode:"",
+    country:""
+  });
+
+  // ---------------- FETCH ----------------
+
+  const fetchAddresses = async () => {
+
+    const {data} = await supabase
+      .from("addresses")
+      .select("*")
+      .eq("user_id",user.id)
+      .order("created_at",{ascending:false});
+
+    if(data) setAddresses(data);
+  };
+
+  useEffect(()=>{
+    if(user) fetchAddresses();
+  },[user]);
+
+  // ---------------- HANDLE INPUT ----------------
+
+  const handleChange = (e)=>{
+
+    setForm({
+      ...form,
+      [e.target.name]:e.target.value
+    });
+
+  };
+
+  // ---------------- ADD ADDRESS ----------------
+
+  const addAddress = async ()=>{
+
+    await supabase
+      .from("addresses")
+      .insert({
+        ...form,
+        user_id:user.id
+      });
+
+    setShowModal(false);
+    setForm({});
+    fetchAddresses();
+  };
+
+  // ---------------- UPDATE ADDRESS ----------------
+
+  const updateAddress = async ()=>{
+
+    await supabase
+      .from("addresses")
+      .update(form)
+      .eq("id",editing.id);
+
+    setEditing(null);
+    setShowModal(false);
+    fetchAddresses();
+  };
+
+  // ---------------- DELETE ----------------
+
+  const deleteAddress = async(id)=>{
+
+    await supabase
+      .from("addresses")
+      .delete()
+      .eq("id",id);
+
+    fetchAddresses();
+  };
+
+  // ---------------- SET DEFAULT ----------------
+
+  const setDefault = async(id)=>{
+
+    await supabase
+      .from("addresses")
+      .update({is_default:false})
+      .eq("user_id",user.id);
+
+    await supabase
+      .from("addresses")
+      .update({is_default:true})
+      .eq("id",id);
+
+    fetchAddresses();
+  };
+
+  // ---------------- OPEN EDIT ----------------
+
+  const openEdit = (address)=>{
+
+    setEditing(address);
+    setForm(address);
+    setShowModal(true);
+  };
 
   return (
 
     <div className="space-y-6">
 
-      {/* ADDRESS CARD */}
+      {/* ADDRESS LIST */}
 
-      <div className="border border-green-400 rounded-xl p-6 bg-white">
+      {addresses.map(addr=>(
 
-        <div className="flex justify-between">
+        <div
+          key={addr.id}
+          className={`border rounded-xl p-6 bg-white flex justify-between ${
+            addr.is_default ? "border-green-400" : ""
+          }`}
+        >
 
           <div className="flex gap-4">
 
-            <FiMapPin size={20}/>
+            <FiMapPin size={22}/>
 
             <div>
 
-              <h3 className="font-semibold">Home</h3>
+              <h3 className="font-semibold">{addr.label}</h3>
 
               <p className="text-gray-500 text-sm">
-                Alex Johnson
+                {addr.full_name}
               </p>
 
               <p className="text-gray-500 text-sm">
-                123 Oak Street, Apt 4B
+                {addr.street}
               </p>
 
               <p className="text-gray-500 text-sm">
-                San Francisco, CA 94102
+                {addr.city}, {addr.state} {addr.zipcode}
               </p>
 
               <p className="text-gray-500 text-sm">
-                United States
+                {addr.country}
               </p>
+
+              {!addr.is_default && (
+
+                <button
+                  onClick={()=>setDefault(addr.id)}
+                  className="text-green-600 text-sm mt-2 flex items-center gap-1"
+                >
+                  <FiCheck/>
+                  Set as default
+                </button>
+
+              )}
 
             </div>
 
           </div>
 
-          <span className="bg-green-100 text-green-600 text-xs px-3 py-1 rounded-full">
-            DEFAULT
-          </span>
+          <div className="flex flex-col items-end gap-3">
+
+            {addr.is_default && (
+
+              <span className="bg-green-100 text-green-600 text-xs px-3 py-1 rounded-full">
+                DEFAULT
+              </span>
+
+            )}
+
+            <div className="flex gap-3 text-gray-500">
+
+              <button onClick={()=>openEdit(addr)}>
+                <FiEdit2/>
+              </button>
+
+              <button onClick={()=>deleteAddress(addr.id)}>
+                <FiTrash2/>
+              </button>
+
+            </div>
+
+          </div>
 
         </div>
 
+      ))}
+
+      {/* ADD BUTTON */}
+
+      <div
+        onClick={()=>{
+          setEditing(null);
+          setForm({});
+          setShowModal(true);
+        }}
+        className="border-dashed border-2 rounded-xl p-6 text-center text-gray-500 cursor-pointer hover:bg-gray-50 flex justify-center items-center gap-2"
+      >
+        <FiPlus/>
+        Add New Address
       </div>
 
+      {/* MODAL */}
 
-      {/* SECOND ADDRESS */}
+      {showModal && (
 
-      <div className="border rounded-xl p-6 bg-white">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 
-        <div className="flex gap-4">
+          <div className="bg-white rounded-xl w-full max-w-lg p-6 space-y-4">
 
-          <FiMapPin size={20}/>
+            <div className="flex justify-between">
 
-          <div>
+              <h2 className="font-semibold text-lg">
+                {editing ? "Edit Address" : "Add Address"}
+              </h2>
 
-            <h3 className="font-semibold">Office</h3>
+              <button onClick={()=>setShowModal(false)}>
+                <FiX/>
+              </button>
 
-            <p className="text-gray-500 text-sm">
-              Alex Johnson
-            </p>
+            </div>
 
-            <p className="text-gray-500 text-sm">
-              456 Market Street, Suite 200
-            </p>
+            <div className="grid grid-cols-2 gap-4">
 
-            <p className="text-gray-500 text-sm">
-              San Francisco, CA 94105
-            </p>
+              <input
+                name="label"
+                placeholder="Label (Home/Office)"
+                onChange={handleChange}
+                value={form.label || ""}
+                className="border p-2 rounded-lg"
+              />
 
-            <p className="text-gray-500 text-sm">
-              United States
-            </p>
+              <input
+                name="full_name"
+                placeholder="Full Name"
+                onChange={handleChange}
+                value={form.full_name || ""}
+                className="border p-2 rounded-lg"
+              />
 
-            <button className="text-green-600 text-sm mt-2">
-              Set as default
+              <input
+                name="phone"
+                placeholder="Phone"
+                onChange={handleChange}
+                value={form.phone || ""}
+                className="border p-2 rounded-lg"
+              />
+
+              <input
+                name="street"
+                placeholder="Street"
+                onChange={handleChange}
+                value={form.street || ""}
+                className="border p-2 rounded-lg col-span-2"
+              />
+
+              <input
+                name="city"
+                placeholder="City"
+                onChange={handleChange}
+                value={form.city || ""}
+                className="border p-2 rounded-lg"
+              />
+
+              <input
+                name="state"
+                placeholder="State"
+                onChange={handleChange}
+                value={form.state || ""}
+                className="border p-2 rounded-lg"
+              />
+
+              <input
+                name="zipcode"
+                placeholder="Zip Code"
+                onChange={handleChange}
+                value={form.zipcode || ""}
+                className="border p-2 rounded-lg"
+              />
+
+              <input
+                name="country"
+                placeholder="Country"
+                onChange={handleChange}
+                value={form.country || ""}
+                className="border p-2 rounded-lg"
+              />
+
+            </div>
+
+            <button
+              onClick={editing ? updateAddress : addAddress}
+              className="w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600"
+            >
+              {editing ? "Update Address" : "Save Address"}
             </button>
 
           </div>
 
         </div>
 
-      </div>
-
-
-      {/* ADD ADDRESS */}
-
-      <div className="border-dashed border-2 rounded-xl p-6 text-center text-gray-500 cursor-pointer">
-        + Add New Address
-      </div>
+      )}
 
     </div>
 
