@@ -11,9 +11,11 @@ function Signup() {
   const [step, setStep] = useState(1);
 
   const handleSignup = async () => {
+    console.log(name, email, password);
+
     const { error } = await supabase.auth.signUp({
-      email: email,
-      password: password,
+      email,
+      password,
       options: {
         data: {
           full_name: name,
@@ -25,20 +27,6 @@ function Signup() {
       alert(error.message);
     } else {
       setStep(2);
-    }
-  };
-
-  const verifyOtp = async () => {
-    const { error } = await supabase.auth.verifyOtp({
-      email: email,
-      token: otp,
-      type: "signup",
-    });
-
-    if (error) {
-      alert(error.message);
-    } else {
-      alert("Account verified!");
     }
   };
 
@@ -72,13 +60,21 @@ function Signup() {
             <>
               <h2 className="text-3xl font-bold">Create Account</h2>
 
-              <form className="mt-8 space-y-5">
+              <form
+                className="mt-8 space-y-5"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSignup();
+                }}
+              >
                 <div>
                   <label className="text-sm text-gray-600">Full Name</label>
                   <div className="flex items-center border rounded-lg px-3 mt-1">
                     <FaUser className="text-gray-400" />
                     <input
                       type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
                       className="w-full p-3 outline-none"
                       placeholder="Enter name"
                     />
@@ -91,6 +87,8 @@ function Signup() {
                     <FaEnvelope className="text-gray-400" />
                     <input
                       type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                       className="w-full p-3 outline-none"
                       placeholder="Enter email"
                     />
@@ -101,8 +99,11 @@ function Signup() {
                   <label className="text-sm text-gray-600">Password</label>
                   <div className="flex items-center border rounded-lg px-3 mt-1">
                     <FaLock className="text-gray-400" />
+
                     <input
                       type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
                       className="w-full p-3 outline-none"
                       placeholder="Create password"
                     />
@@ -110,8 +111,7 @@ function Signup() {
                 </div>
 
                 <button
-                  type="button"
-                  onClick={handleSignup}
+                  type="submit"
                   className="w-full bg-green-500 text-white py-3 rounded-lg hover:bg-green-600"
                 >
                   Sign Up
@@ -124,20 +124,20 @@ function Signup() {
             <>
               <h2 className="text-3xl font-bold">Verify Email</h2>
 
-              <p className="text-gray-500 mt-2">
-                Enter the OTP sent to your email
+              <p className="text-gray-500 mt-4">
+                A confirmation email has been sent to
+                <span className="font-semibold"> {email}</span>.
               </p>
 
-              <div className="mt-8 flex justify-center">
-                <OTPInput otp={otp} setOtp={setOtp} />
-              </div>
+              <p className="text-gray-500 mt-2">
+                Please check your inbox and click the
+                <span className="font-semibold"> "Confirm your email"</span>
+                link to activate your account.
+              </p>
 
-              <button
-                onClick={verifyOtp}
-                className="w-full bg-green-500 text-white py-3 rounded-lg mt-8"
-              >
-                Verify Code
-              </button>
+              <p className="text-gray-400 text-sm mt-6">
+                Once confirmed, you can return here and login.
+              </p>
             </>
           )}
         </div>
