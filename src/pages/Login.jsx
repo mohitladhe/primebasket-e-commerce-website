@@ -1,10 +1,38 @@
 import { useState } from "react";
 import { FaEnvelope, FaLock } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "../lib/supabaseClient";
 
 function Login() {
 
-  const [showPassword,setShowPassword] = useState(false)
+  const navigate = useNavigate();
+
+  const [showPassword,setShowPassword] = useState(false);
+  const [email,setEmail] = useState("");
+  const [password,setPassword] = useState("");
+  const [loading,setLoading] = useState(false);
+
+  const handleLogin = async (e) => {
+
+    e.preventDefault();
+    setLoading(true);
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    setLoading(false);
+
+    if(error){
+      alert(error.message);
+      return;
+    }
+
+    // redirect after login
+    navigate("/");
+
+  };
 
   return (
 
@@ -12,7 +40,7 @@ function Login() {
 
       <div className="max-w-6xl w-full grid md:grid-cols-2 bg-white rounded-2xl shadow-lg overflow-hidden">
 
-        {/* LEFT SIDE - IMAGE / BRAND */}
+        {/* LEFT SIDE */}
 
         <div className="hidden md:flex flex-col justify-center items-center bg-green-500 text-white p-12">
 
@@ -39,7 +67,7 @@ function Login() {
         </div>
 
 
-        {/* RIGHT SIDE - FORM */}
+        {/* RIGHT SIDE */}
 
         <div className="p-10 md:p-14">
 
@@ -52,9 +80,7 @@ function Login() {
           </p>
 
 
-          {/* FORM */}
-
-          <form className="mt-8 space-y-5">
+          <form onSubmit={handleLogin} className="mt-8 space-y-5">
 
             {/* EMAIL */}
 
@@ -72,6 +98,9 @@ function Login() {
                   type="email"
                   placeholder="Enter your email"
                   className="w-full p-3 outline-none"
+                  value={email}
+                  onChange={(e)=>setEmail(e.target.value)}
+                  required
                 />
 
               </div>
@@ -95,6 +124,9 @@ function Login() {
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter password"
                   className="w-full p-3 outline-none"
+                  value={password}
+                  onChange={(e)=>setPassword(e.target.value)}
+                  required
                 />
 
                 <button
@@ -128,8 +160,12 @@ function Login() {
 
             {/* LOGIN BUTTON */}
 
-            <button className="w-full bg-green-500 text-white py-3 rounded-lg font-medium hover:bg-green-600 transition">
-              Login
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-green-500 text-white py-3 rounded-lg font-medium hover:bg-green-600 transition"
+            >
+              {loading ? "Logging in..." : "Login"}
             </button>
 
           </form>
@@ -158,9 +194,9 @@ function Login() {
             Don't have an account ?
 
             <Link to="/signup">
-            <span className="text-green-500 cursor-pointer">
-              Sign up
-            </span>
+              <span className="text-green-500 cursor-pointer">
+                Sign up
+              </span>
             </Link>
 
           </p>
@@ -175,4 +211,4 @@ function Login() {
 
 }
 
-export default Login
+export default Login;

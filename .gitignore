@@ -1,4 +1,7 @@
-# Logs
+# Ignore all node_modules directories
+**/node_modules
+
+# Ignore logs
 logs
 *.log
 npm-debug.log*
@@ -7,18 +10,35 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
+# Ignore build output
 dist
 dist-ssr
+
+# Ignore environment variables
+.env
+.env.local
+.env.*.local
 *.local
 
-# Editor directories and files
-.vscode/*
+# Ignore editor directories and files
+.vscode/
 !.vscode/extensions.json
-.idea
-.DS_Store
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
-*.sw?
+*.swp
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore test coverage output
+coverage/
+
+# Ignore Vite cache
+.vite/
+
+# Ignore SSL certificates
+*.pem
