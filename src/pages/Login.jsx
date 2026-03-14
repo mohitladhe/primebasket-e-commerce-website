@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { FaEnvelope, FaLock } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 function Login() {
 
@@ -156,9 +157,11 @@ function Login() {
 
             Don't have an account ?
 
+            <Link to="/signup">
             <span className="text-green-500 cursor-pointer">
               Sign up
             </span>
+            </Link>
 
           </p>
 
